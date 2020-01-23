@@ -4,6 +4,7 @@ import sys
 import copy
 
 import line_of_sight
+import shop
 
 check_if_visible = line_of_sight.check_if_visible
 
@@ -65,6 +66,8 @@ characters = []
 character_slots = []
 slot_buys = ["b", "c", "d", "e", "f", "g", "h", "i", "j"]
 day = 1
+freedom_score = 0
+money = 110 #starting money, 1 SP
 names_dwarf_male = ["Kathumir", "Thrar", "Skovrom", "Durin", "Bruenor", "Gloin", "Oin", "Rumnum", "Galik", "Firrean"]
 names_dwarf_female = ["Thotrere", "Kosdruni", "Kivolynn", "Houdiren", "Nargiren", "Marbibo", "Vodwebo", "Moberika",
                       "Umidruthra", "Yuzona"]
@@ -91,9 +94,20 @@ battle_ground_1 = [[".", ".", ".", "W", ".", ".", ".", "W", ".", ".", ".", ".", 
                    [".", ".", ".", ".", ".", ".", ".", ".", "W", "W", ".", "W", "W", ".", ".", ".", ".", ".", ".", "."],
                    [".", ".", ".", ".", ".", ".", ".", ".", "W", ".", ".", ".", "W", ".", ".", ".", ".", ".", ".", "."],
                    [".", ".", ".", ".", ".", ".", ".", ".", "W", ".", ".", ".", "W", ".", ".", ".", ".", ".", ".", "."],
-                   [".", ".", ".", ".", ".", ".", ".", ".", "W", ".", ".", ".", "W", ".", ".", ".", ".", ".", ".", "."]
-                   ]
+                   [".", ".", ".", ".", ".", ".", ".", ".", "W", ".", ".", ".", "W", ".", ".", ".", ".", ".", ".", "."]]
 
+battle_ground_underground_1 = [["W", ".", ".", "W", ".", ".", ".", "W", ".", ".", ".", ".", "W", "W", "W", "W", "W", ".", ".", "W"],
+                               ["W", ".", ".", "W", ".", ".", ".", "W", ".", ".", ".", ".", "W", ".", ".", ".", ".", ".", ".", "W"],
+                               ["W", ".", ".", "W", ".", ".", ".", "W", ".", ".", ".", ".", "W", ".", ".", ".", ".", ".", ".", "W"],
+                               ["W", "W", ".", "W", ".", "W", ".", "W", ".", ".", "W", "W", "W", ".", ".", "W", "W", "W", "W", "W"],
+                               ["W", ".", ".", ".", ".", ".", ".", "W", ".", ".", ".", ".", ".", ".", ".", "W", ".", ".", ".", "W"],
+                               ["W", ".", ".", ".", ".", "W", ".", "W", "W", "W", "W", ".", ".", ".", ".", ".", ".", ".", ".", "W"],
+                               ["W", ".", ".", ".", ".", "W", ".", ".", ".", ".", ".", ".", ".", ".", ".", "W", ".", ".", ".", "W"],
+                               ["W", ".", ".", ".", ".", "W", ".", ".", ".", ".", ".", ".", ".", ".", ".", "W", ".", ".", ".", "W"],
+                               ["W", "W", ".", "W", "W", "W", ".", ".", "W", "W", ".", "W", "W", ".", ".", "W", "W", ".", "W", "W"],
+                               ["W", ".", ".", ".", ".", ".", ".", ".", "W", ".", ".", ".", "W", ".", ".", ".", ".", ".", ".", "."],
+                               ["W", ".", ".", ".", ".", ".", ".", ".", "W", ".", ".", ".", "W", ".", ".", ".", ".", ".", ".", "."],
+                               ["W", ".", ".", "W", "W", "W", "W", "W", "W", ".", ".", ".", "W", "W", "W", "W", "W", "W", "W", "W"]]
 
 def starting_screen():
     """Prints out the starting screen. All you need to start with."""
@@ -850,45 +864,45 @@ def assign_attributes_wizard(attributes):
 def grant_random_name(race, gender):
     if race == races[0]:
         if gender == "Male" and len(names_dwarf_male) > 0:
-            pointer = random.randint(0, len(names_dwarf_male))
+            pointer = random.randint(0, (len(names_dwarf_male) - 1))
             name = names_dwarf_male[pointer]
             names_dwarf_male.remove(name)
             return name
         elif gender == "Female" and len(names_dwarf_female) > 0:
-            pointer = random.randint(0, len(names_dwarf_female))
+            pointer = random.randint(0, (len(names_dwarf_female) - 1))
             name = names_dwarf_female[pointer]
             names_dwarf_female.remove(name)
             return name
     elif race == races[1]:
         if gender == "Male" and len(names_elf_male) > 0:
-            pointer = random.randint(0, len(names_elf_male))
+            pointer = random.randint(0, (len(names_elf_male) - 1))
             name = names_elf_male[pointer]
             names_elf_male.remove(name)
             return name
         elif gender == "Female" and len(names_elf_female) > 0:
-            pointer = random.randint(0, len(names_elf_female))
+            pointer = random.randint(0, (len(names_elf_female) -1))
             name = names_elf_female[pointer]
             names_elf_female.remove(name)
             return name
     elif race == races[2]:
         if gender == "Male" and len(names_halfling_male) > 0:
-            pointer = random.randint(0, len(names_halfling_male))
+            pointer = random.randint(0, (len(names_halfling_male) -1))
             name = names_halfling_male[pointer]
             names_halfling_male.remove(name)
             return name
         elif gender == "Female" and len(names_halfling_female) > 0:
-            pointer = random.randint(0, len(names_halfling_female))
+            pointer = random.randint(0, (len(names_halfling_female) -1))
             name = names_halfling_female[pointer]
             names_halfling_female.remove(name)
             return name
     elif race == races[3]:
         if gender == "Male" and len(names_human_male) > 0:
-            pointer = random.randint(0, len(names_human_male))
+            pointer = random.randint(0, (len(names_human_male) -1))
             name = names_human_male[pointer]
             names_human_male.remove(name)
             return name
         elif gender == "Female" and len(names_human_female) > 0:
-            pointer = random.randint(0, len(names_dwarf_female))
+            pointer = random.randint(0, (len(names_dwarf_female) -1))
             name = names_dwarf_female[pointer]
             names_dwarf_female.remove(name)
             return name
@@ -956,7 +970,7 @@ def day_menu():
     #elif choice == "s":
         #save_game()
     elif choice == 'c':
-        character_screen(characters, 0)
+        character_screen(characters)
     #elif choice == "t":
         #town_status(locations)
     elif choice == "h":
@@ -969,17 +983,53 @@ def day_menu():
         #short_rest()
     #elif choice == "f":
         #crafting()
-    #elif choice == "p":
-        #shopping()
+    elif choice == "p":
+        shopping(freedom_score, money)
+    #elif choice == "n":
+    #    day += 1
+    #    print("You decide to wait until tomorrow.")
     else:
         print("You what now?")
         day_menu()
 
 
-def character_screen(character_list, page):
+def character_screen(character_list):
+    page = 0
     number = len(character_list)
     max_pages = int(number / 10)
     pointer = 0 + int(page) * 10
+    while True:
+        print_character_screen(character_list,page,pointer,number)
+        choice = input("Type your choice here:\n")
+        if str(choice).strip().lower() == "b":
+            print("Going back to Day Menu.")
+            break
+        elif str(choice).strip().lower() == "n":
+            if page < max_pages:
+                break
+                page += 1
+            else:
+                print("You can't go to next page since you're currently on the last page.")
+        elif str(choice).strip().lower() == "p":
+            if 0 < page:
+                break
+                page -= 1
+            else:
+                print("You can't go to previous page since you're currently on the first page.")
+        else: 
+            try :
+                if int(choice) > number:
+                    print("You do not have this many characters.")
+                elif 0 < int(choice) < 11:
+                    pointer = int(choice) - 1 + page * 10
+                    character_stats(characters_c[character_list[pointer]], page)
+                else:
+                    print("The number you gave is too large.")
+            except ValueError:
+                print("This was not a valid option.")
+                
+def print_character_screen(character_list, page, pointer, number):
+    max_pages = int(number / 10)
     print("###########################################################################")
     print("#                                                                         #")
     print("#   1. %s" % character_list[pointer] + (" " * (67 - len(character_list[pointer]))) + "#")
@@ -1022,43 +1072,6 @@ def character_screen(character_list, page):
     print("#   B - Back to action menu                                               #")
     print("#                                                                         #")
     print("###########################################################################")
-    choice = input("Type your choice here:\n")
-    if choice == "B":
-        day_menu()
-    elif choice == "N":
-        if page < max_pages:
-            character_screen(character_list, (page + 1))
-        else:
-            print("You can't go to next page since you're currently on the last page.")
-            character_screen(character_list, page)
-    elif choice == "P":
-        if 0 < page:
-            character_screen(character_list, (page - 1))
-        else:
-            print("You can't go to previous page since you're currently on the first page.")
-            character_screen(character_list, page)
-    elif 0 < int(choice) < 11:
-        pointer = int(choice) - 1 + page * 10
-        character_stats(characters_c[character_list[pointer]], page)
-    else:
-        while True:
-            print("This was not a valid option.")
-            choice = input("Type your choice here:\n")
-            if choice == "B":
-                day_menu()
-            elif choice == "N":
-                if page < max_pages:
-                    character_screen(character_list, (page + 1))
-                else:
-                    print("You can't go to next page since you're currently on the last page.")
-                    character_screen(character_list, page)
-            elif choice == "P":
-                if 0 < page:
-                    character_screen(character_list, (page - 1))
-                else:
-                    print("You can't go to previous page since you're currently on the first page.")
-                    character_screen(character_list, page)
-
 
 def character_stats(character, page):
     name = character.name
@@ -1093,8 +1106,7 @@ def character_stats(character, page):
     print("#                                                                         #")
     print("###########################################################################")
     back = input("")
-    character_screen(characters, page)
-
+    #character_screen(characters, page)
 
 def battle(field_base): #,characters, enemies
     field = copy.deepcopy(field_base)
@@ -1159,7 +1171,6 @@ def printable_row(field, row):
     printable = printable + key
     return printable
 
-
 #def create_enemy(type):
 
 def convert_y_to_numbers(coordinates):
@@ -1190,7 +1201,43 @@ def convert_y_to_numbers(coordinates):
     coordinates[0] = int(coordinates[0]) - 1
     return coordinates
 
-
+def shopping(freedom_score, money):
+    """Parent function for shop interface."""
+    items = shop.get_shop_items(freedom_score) # An array of item classes, determined by the function according to how much of the town has been freed.
+    shop.shopping_screen(money, items)
+    menu_fail_counter = 0
+    while True:
+        choice = input("What will you do?:\n")
+        choice = str(choice).strip().lower()
+        if choice == 'b':
+            print("Going back to Day Menu.")
+            break
+        #elif choice == "s":
+            #save_game()
+        #elif choice == 'c':
+            #character_screen(characters, 0)
+        #elif choice == "t":
+            #town_status(locations)
+        #elif choice == "h":
+            #battle(battle_ground_1)
+        #elif choice == "a":
+            #assault(characters)
+        #elif choice == "e":
+            #expedition(characters)
+        #elif choice == "r":
+            #short_rest()
+        #elif choice == "f":
+            #crafting()
+        #elif choice == "p":
+            #shopping(freedom_score, money)
+        #elif choice == "n":
+            #skip_to_next_day()
+        else:
+            print("You what now?")
+            menu_fail_counter += 1
+            if menu_fail_counter > 5:
+                menu_fail_counter -= 5
+                shop.shopping_screen(money, items)
 
 def play_game():
     while True:
