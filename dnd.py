@@ -5,11 +5,12 @@ import copy
 
 import line_of_sight
 import shop
+import items_lists
 
 check_if_visible = line_of_sight.check_if_visible
 
 class character:
-    def __init__(self, name, gender, role, race, attributes):
+    def __init__(self, name, gender, role, race, attributes, start_gear):
         self.name = name
         self.gender = gender
         self.role = role
@@ -34,7 +35,11 @@ class character:
                 self.hp = role_hps[i] + self.constitution_modifier
                 break
         self.temp_hp = self.hp
-
+        self.gear = start_gear #{"Main Hand":"","Off Hand":"","Armor":"","Magic Item 1":"","Magic Item 2":"","Secondary Main Hand":"","Secondary Off Hand":""}
+        if self.gear["Main Hand"] != "" and items_lists.weapon_data[self.gear["Main Hand"]] == "2H":
+           self.gear["Off Hand"] = "Two Handed"
+        if self.gear["Secondary Main Hand"] != "" and items_lists.weapon_data[self.gear["Secondary Main Hand"]] == "2H":
+           self.gear["Secondary Off Hand"] = "Two Handed"
 
     def add_xp(self, additional_xp):
         """Adds xp to the character and checks if character levels up or not."""
@@ -57,8 +62,7 @@ class character:
 
 
 
-roles = ["Barbarian", "Bard", "Cleric", "Druid", "Fighter", "Monk", "Paladin", "Ranger", "Rogue", "Sorcerer", "Warlock",
-         "Wizard"]
+roles = ["Barbarian", "Bard", "Cleric", "Druid", "Fighter", "Monk", "Paladin", "Ranger", "Rogue", "Sorcerer", "Warlock", "Wizard"]
 role_hps = [12, 8, 8, 8, 10, 8, 10, 10, 8, 6, 8, 6]
 races = ["Dwarf", "Elf", "Halfling", "Human", "Dragonborn", "Gnome", "Half-Elf", "Half-Orc", "Tiefling"]
 characters_c = {}
@@ -67,20 +71,15 @@ character_slots = []
 slot_buys = ["b", "c", "d", "e", "f", "g", "h", "i", "j"]
 day = 1
 freedom_score = 0
-money = 110 #starting money, 1 SP
+money = 110 #starting money, 1 SP 10 CP
 names_dwarf_male = ["Kathumir", "Thrar", "Skovrom", "Durin", "Bruenor", "Gloin", "Oin", "Rumnum", "Galik", "Firrean"]
-names_dwarf_female = ["Thotrere", "Kosdruni", "Kivolynn", "Houdiren", "Nargiren", "Marbibo", "Vodwebo", "Moberika",
-                      "Umidruthra", "Yuzona"]
+names_dwarf_female = ["Thotrere", "Kosdruni", "Kivolynn", "Houdiren", "Nargiren", "Marbibo", "Vodwebo", "Moberika","Umidruthra", "Yuzona"]
 names_elf_male = ["Elrond", "Haldir", "Vaeril", "Hastos", "Kolvar", "Illithor", "Aias", "Aithlin", "Estelar", "Folwin"]
-names_elf_female = ["Allisa", "Cellica", "Cremia", "Arwen", "Galadriel", "Lyndis", "Talila", "Syndra", "Sorsastra",
-                    "Mylaerla"]
-names_halfling_male = ["Odilon", "Leger", "Fridolin", "Brutus", "Bilbo", "Samwise", "Alaric", "Hagen", "Ragnfred",
-                       "Fastolph"]
-names_halfling_female = ["Terri", "Tatiana", "Mindy", "Alpais", "Linda", "Robinia", "Rhoda", "Caitlin", "Yolanda",
-                         "Clothild"]
+names_elf_female = ["Allisa", "Cellica", "Cremia", "Arwen", "Galadriel", "Lyndis", "Talila", "Syndra", "Sorsastra","Mylaerla"]
+names_halfling_male = ["Odilon", "Leger", "Fridolin", "Brutus", "Bilbo", "Samwise", "Alaric", "Hagen", "Ragnfred","Fastolph"]
+names_halfling_female = ["Terri", "Tatiana", "Mindy", "Alpais", "Linda", "Robinia", "Rhoda", "Caitlin", "Yolanda","Clothild"]
 names_human_male = ["Frederic", "Elyot", "Challes", "Leo", "Roulf", "Artus", "Guilhelm", "Reymond", "Jacke", "Gavin"]
-names_human_female = ["Birgida", "Muriel", "Isabel", "Marione", "Ioletta", "Mirils", "Elisabeth", "Emily", "Josephine",
-                      "Astrida"]
+names_human_female = ["Birgida", "Muriel", "Isabel", "Marione", "Ioletta", "Mirils", "Elisabeth", "Emily", "Josephine","Astrida"]
 names_dragonborn_male = []
 
 battle_ground_1 = [[".", ".", ".", "W", ".", ".", ".", "W", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
@@ -118,34 +117,41 @@ def starting_screen():
     print("#                                                           /   \         #")
     print("#       'Delve into the depths'                            /     \        #")
     print("#                                                         /       \       #")
-    print("#                                                  A     /  ____   \      #")
-    print("#     Choose a number and press Enter             / \   /__/    \___\     #")
-    print("#                                                /  _\ /             \    #")
-    print("#     1. New Game                               /__/  V               \   #")
-    print("#                                              /       \               \  #")
-    print("#     2. Load Game                            /         \               \ #")
+    print("#     Choose a number and press Enter              A     /  ____   \      #")
+    print("#                                                 / \   /__/    \___\     #")
+    print("#     1. New Game                                /  _\ /             \    #")
+    print("#     2. Load Game                              /__/  V               \   #")
+    print("#     3. Credits                               /       \               \  #")
+    print("#                                             /         \               \ #")
     print("#                                            /           \               \#")
-    print("#     3. Credits                            /             \     v.0.0.1   #")
+    print("#     Q. Exit Game                          /             \     v.0.0.2   #")
     print("#                                                                         #")
     print("###########################################################################")
     #   print("123456789012345678901234567890123456789012345678901234567890123456789012345") 75
     pointer = 0
     while pointer == 0:
         choice = input("Your choice: \n")
-        if 4 > int(choice) > 0:
-            choice = int(choice)
-            if choice == 1:
-                pointer = 1
-                prepare_new_game()
-                start_new_game()
-            elif choice == 2:
-                pointer = 1
-                # load_game()
-            elif choice == 3:
-                pointer = 1
-                creators()
-            else:
+        if str(choice).strip().lower() == "q":
+            print("Shutting down the game.")
+            sys.exit()
+        try:
+            if 4 > int(choice) > 0:
+                choice = int(choice)
+                if choice == 1:
+                    pointer = 1
+                    prepare_new_game()
+                    start_new_game()
+                elif choice == 2:
+                    pointer = 1
+                    print("Loading games has not been implemented yet, please choose 1 or 3.")
+                    # load_game()
+                elif choice == 3:
+                    pointer = 1
+                    creators()
+            elif int(choice) < 0 or int(choice) > 4:
                 print("The number you chose is not an option")
+        except ValueError:
+            print("This was not a number, please choose a number between 1-3.")
         if pointer != 0:
             break
         else:
@@ -528,7 +534,8 @@ def create_character_2(gender):
     print("###########################################################################")
     accept = input("Is this character fine? (y/n):\n")
     if accept == "y":
-        character_slots[0] = character(name, gender, role, race, scores)
+        gear = get_starting_gear(role) # Random gear for now, need to implement an optional choosing query for the player.
+        character_slots[0] = character(name, gender, role, race, scores, gear)
         id = character_slots.pop(0)
         characters_c[name] = id
         characters.append(name)
@@ -544,7 +551,8 @@ def create_character_random(gender):
     attributes = roll_attributes()
     scores = assign_attributes_auto(role, attributes)
     name = grant_random_name(race, gender)
-    character_slots[0] = character(name, gender, role, race, scores)
+    gear = get_starting_gear(role)
+    character_slots[0] = character(name, gender, role, race, scores, gear)
     id = character_slots.pop(0)
     characters_c[name] = id
     characters.append(name)
@@ -918,6 +926,35 @@ def grant_random_name(race, gender):
         return name
 
 
+def get_starting_gear(role):
+    """Takes character's role (Class) and randomises starting gear."""
+    gear = {"Main Hand":"","Off Hand":"","Armor":"","Magic Item 1":"","Magic Item 2":"","Secondary Main Hand":"","Secondary Off Hand":""}
+    #roles = ["Barbarian", "Bard", "Cleric", "Druid", "Fighter", "Monk", "Paladin", "Ranger", "Rogue", "Sorcerer", "Warlock", "Wizard"]
+    if role == "Barbarian":
+        weapon_A_list = items_lists.list_martial_weapons
+        weapon_A = random.choice(weapon_A_list)
+        gear["Main Hand"] = weapon_A
+        weapon_B_list = items_lists.list_simple_weapons
+        weapon_B = random.choice(weapon_B_list)
+        if weapon_B == "Handaxe":
+            gear["Secondary Main Hand"] = weapon_B
+            gear["Secondary Off Hand"] = weapon_B
+        else:
+            gear["Secondary Main Hand"] = weapon_B
+        gear["Armor"] = "Clothing"
+    #elif role == "Bard": 
+    else: # Using the Bard as general gear for testing purposes
+        weapon_A_list = items_lists.list_simple_weapons + ["Longsword","Rapier"]
+        weapon_A = random.choice(weapon_A_list)
+        gear["Main Hand"] = weapon_A
+        if items_lists.weapon_data[gear["Main Hand"]] == "2H":
+            gear["Secondary Main Hand"] = "Dagger"
+        else:
+            gear["Off Hand"] = "Dagger"
+        gear["Armor"] = "Leather"
+    return gear
+    
+
 def beginning():
     print("###########################################################################")
     print("#                                                                         #")
@@ -997,8 +1034,9 @@ def character_screen(character_list):
     page = 0
     number = len(character_list)
     max_pages = int(number / 10)
-    pointer = 0 + int(page) * 10
+    
     while True:
+        pointer = 0 + int(page) * 10
         print_character_screen(character_list,page,pointer,number)
         choice = input("Type your choice here:\n")
         if str(choice).strip().lower() == "b":
@@ -1017,14 +1055,14 @@ def character_screen(character_list):
             else:
                 print("You can't go to previous page since you're currently on the first page.")
         else: 
-            try :
+            try:
                 if int(choice) > number:
                     print("You do not have this many characters.")
                 elif 0 < int(choice) < 11:
                     pointer = int(choice) - 1 + page * 10
                     character_stats(characters_c[character_list[pointer]], page)
                 else:
-                    print("The number you gave is too large.")
+                    print("The number you gave is too large or a negative number.")
             except ValueError:
                 print("This was not a valid option.")
                 
@@ -1091,8 +1129,7 @@ def character_stats(character, page):
     print("#                                                                         #")
     print("#   %s" % name + (" " * (70 - len(str(name)))) + "#")
     print("#   %s %s %s" % (gender, race, role) + (" " * (68 - len(gender) - len(race) - len(role))) + "#")
-    print("#   HP: %d/%d" % (temp_hp, hp) + (" "*(64 - len(str(temp_hp)) - len(str(hp)) - len(str(xp)))) + "XP: %d #" %
-          xp)
+    print("#   HP: %d/%d" % (temp_hp, hp) + (" "*(64 - len(str(temp_hp)) - len(str(hp)) - len(str(xp)))) + "XP: %d #" % xp)
     print("#   Strength: %d" % strength + (" " * (60 - len(str(strength)))) + "#")
     print("#   Dexterity: %d" % dexterity + (" " * (59 - len(str(dexterity)))) + "#")
     print("#   Constitution: %d" % constitution + (" " * (56 - len(str(constitution)))) + "#")
@@ -1100,11 +1137,12 @@ def character_stats(character, page):
     print("#   Wisdom: %d" % wisdom + (" " * (62 - len(str(wisdom)))) + "#")
     print("#   Charisma: %d" % charisma + (" " * (60 - len(str(charisma)))) + "#")
     print("#                                                                         #")
-    print("#                                                                         #")
+    print("#   I - Inventory                                                         #")
     print("#                                                                         #")
     print("#   Press Enter to go back.                                               #")
     print("#                                                                         #")
     print("###########################################################################")
+    print(character.gear)
     back = input("")
     #character_screen(characters, page)
 

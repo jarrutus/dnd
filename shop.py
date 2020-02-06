@@ -1,4 +1,4 @@
-
+import items_lists
 
 def shopping_screen(money, items):
     coins = divide_money(money)
