@@ -6,6 +6,7 @@ import copy
 import line_of_sight
 import shop
 import items_lists
+import screens
 
 check_if_visible = line_of_sight.check_if_visible
 
@@ -57,7 +58,37 @@ class character:
             print("%s has gained a level." % self.name)
 
 
-#class enemy:
+class game:
+    def __init__(self, game_data): # Used for storing game data as well as loading up a save.
+        # game_data structure = [day, freedom_score, money, characters, characters_c]
+        self.day = game_data[0] # [day#,time_of_day] Time of day: Dawn/Morning/Noon/Afternoon/Dusk/Evening/Midnight/Late Watches
+        self.score = game_data[1]
+        self.money = game_data[2]
+        self.character_list = game_data[3] # List of character names, used to get correct 
+        self.character_dict = game_data[4] # Dictionary of character objects by name.
+    
+    def get_day(self):
+        return self.day
+    
+    def skip_to_dawn(self):
+        self.day[0] += 1
+        self.day[1] = 0 # Resets time of day to dawn.
+        
+    def get_money(self):
+        return self.money
+        
+    def update_money(self, deduct, sum):
+        if deduct == 0:
+            self.money += sum
+        elif deduct == 1:
+            self.money -= sum
+    
+    def add_character(self, character, memory_slot):
+        self.character_list.append(character)
+        self.character_dict.update(memory_slot) # Is a {"Name":Character object}
+
+
+#class enemy: # Once combat system is being worked on, this class will actually be made.
 #    def __init__(self, type):
 
 
@@ -65,13 +96,9 @@ class character:
 roles = ["Barbarian", "Bard", "Cleric", "Druid", "Fighter", "Monk", "Paladin", "Ranger", "Rogue", "Sorcerer", "Warlock", "Wizard"]
 role_hps = [12, 8, 8, 8, 10, 8, 10, 10, 8, 6, 8, 6]
 races = ["Dwarf", "Elf", "Halfling", "Human", "Dragonborn", "Gnome", "Half-Elf", "Half-Orc", "Tiefling"]
-characters_c = {}
-characters = []
-character_slots = []
+#character_slots = []
 slot_buys = ["b", "c", "d", "e", "f", "g", "h", "i", "j"]
-day = 1
-freedom_score = 0
-money = 110 #starting money, 1 SP 10 CP
+games = []
 names_dwarf_male = ["Kathumir", "Thrar", "Skovrom", "Durin", "Bruenor", "Gloin", "Oin", "Rumnum", "Galik", "Firrean"]
 names_dwarf_female = ["Thotrere", "Kosdruni", "Kivolynn", "Houdiren", "Nargiren", "Marbibo", "Vodwebo", "Moberika","Umidruthra", "Yuzona"]
 names_elf_male = ["Elrond", "Haldir", "Vaeril", "Hastos", "Kolvar", "Illithor", "Aias", "Aithlin", "Estelar", "Folwin"]
@@ -110,24 +137,9 @@ battle_ground_underground_1 = [["W", ".", ".", "W", ".", ".", ".", "W", ".", "."
 
 def starting_screen():
     """Prints out the starting screen. All you need to start with."""
-    print("###########################################################################")
-    print("#                                                                         #")
-    print("#                                                             A           #")
-    print("#       A Dungeons and Dragons text-game                     / \          #")
-    print("#                                                           /   \         #")
-    print("#       'Delve into the depths'                            /     \        #")
-    print("#                                                         /       \       #")
-    print("#     Choose a number and press Enter              A     /  ____   \      #")
-    print("#                                                 / \   /__/    \___\     #")
-    print("#     1. New Game                                /  _\ /             \    #")
-    print("#     2. Load Game                              /__/  V               \   #")
-    print("#     3. Credits                               /       \               \  #")
-    print("#                                             /         \               \ #")
-    print("#                                            /           \               \#")
-    print("#     Q. Exit Game                          /             \     v.0.0.2   #")
-    print("#                                                                         #")
-    print("###########################################################################")
     #   print("123456789012345678901234567890123456789012345678901234567890123456789012345") 75
+    visuals = screens.screens["Start_Screen"] # Could be done with 1 line instead of 2.
+    visuals.print_screen()
     pointer = 0
     while pointer == 0:
         choice = input("Your choice: \n")
@@ -159,30 +171,17 @@ def starting_screen():
 
 
 def prepare_new_game():
-    for i in range(50):
-        ticket = "a" + str(i)
-        character_slots.append(ticket)
+    #for i in range(50): # Now obsolete, as I decided to scrap the character cap in it's current form.
+    #    ticket = "a" + str(i)
+    #    character_slots.append(ticket)
+    # Add in starting money, day, score etc, create game object.
+    games.append( game([[1,0],0,250,[],{}]) ) # Since there is no load functionality yet, we'll use games[-1] for the game itself.
 
 
 def creators():
     """Credits screen"""
-    print("###########################################################################")
-    print("#                                                                         #")
-    print("#       Coded by Eero 'Zhatelier' 'jarrutus' Huhtelin                     #")
-    print("#                                                                         #")
-    print("#       Rulesets by Wizards of the Coast                                  #")
-    print("#       Implemented by Eero Huhtelin                                      #")
-    print("#                                                                         #")
-    print("#                                                                         #")
-    print("#                                                                         #")
-    print("#                                                                         #")
-    print("#                                                                         #")
-    print("#                                                                         #")
-    print("#                                                                         #")
-    print("#                                                                         #")
-    print("#                                                                         #")
-    print("#                                                                         #")
-    print("###########################################################################")
+    visuals = screens.screens["Credits_Screen"]
+    visuals.print_screen()
     back = input("Press 'Enter' to get back to the start screen: \n")
     if back == "":
         starting_screen()
@@ -198,23 +197,7 @@ def creators():
 
 def start_new_game():
     """Guides the player through character creation(s) and starts game process"""
-    print("###########################################################################")
-    print("#                                                                         #")
-    print("#       You're about to begin a new adventure.                            #")
-    print("#       How many chatacters would you like to begin with (1-6)?           #")
-    print("#                                                                         #")
-    print("#       While the adventure goes on you might acquire                     #")
-    print("#       more character to your party.                                     #")
-    print("#                                                                         #")
-    print("#              &&                                                         #")
-    print("#            &&&&&&                                                       #")
-    print("#       &&   &&&&&& %%                                                    #")
-    print("#     &&&&&&  &&&& %%%%                                                   #")
-    print("#     &&&&&&   ||  %%%%                                                   #")
-    print("#      &&&&    ||  %%%%                                                   #")
-    print("#       ||    &&   %%%%  &&                                               #")
-    print("#       ||  &&&&&&  || &&&&&&                                             #")
-    print("###########################################################################")
+    screens.screens["New_Game"].print_screen()
     pointer = 0
     while pointer == 0:
         choice = input("Your choice: \n")
@@ -230,7 +213,7 @@ def start_new_game():
     beginning()
     play_game()
 
-
+# Character creation needs to be made into it's own file in order to reduce the clutter at some point.
 def create_character_1():
     """Determines the gender of the character after which directs to appropriate option (random or manual)"""
     print("###########################################################################")
@@ -535,10 +518,7 @@ def create_character_2(gender):
     accept = input("Is this character fine? (y/n):\n")
     if accept == "y":
         gear = get_starting_gear(role) # Random gear for now, need to implement an optional choosing query for the player.
-        character_slots[0] = character(name, gender, role, race, scores, gear)
-        id = character_slots.pop(0)
-        characters_c[name] = id
-        characters.append(name)
+        games[-1].add_character(name,{name:character(name, gender, role, race, scores, gear)})            
     else:
         create_character_1()
 
@@ -552,10 +532,7 @@ def create_character_random(gender):
     scores = assign_attributes_auto(role, attributes)
     name = grant_random_name(race, gender)
     gear = get_starting_gear(role)
-    character_slots[0] = character(name, gender, role, race, scores, gear)
-    id = character_slots.pop(0)
-    characters_c[name] = id
-    characters.append(name)
+    games[-1].add_character(name,{name:character(name, gender, role, race, scores, gear)})
     bio1 = "We have created a %s %s for you" % (race, role)
     bio2 = "Name of created character is %s" % name
     print("###########################################################################")
@@ -918,7 +895,7 @@ def grant_random_name(race, gender):
         number = 0
         name = "Bob"
         while True:
-            if name not in characters:
+            if name not in games[-1].character_list:
                 break
             else:
                 number += 1
@@ -930,6 +907,8 @@ def get_starting_gear(role):
     """Takes character's role (Class) and randomises starting gear."""
     gear = {"Main Hand":"","Off Hand":"","Armor":"","Magic Item 1":"","Magic Item 2":"","Secondary Main Hand":"","Secondary Off Hand":""}
     #roles = ["Barbarian", "Bard", "Cleric", "Druid", "Fighter", "Monk", "Paladin", "Ranger", "Rogue", "Sorcerer", "Warlock", "Wizard"]
+    # At a later point it might be a good idea to spawn characters without an armor? Once the shop has been implemented properly.
+    
     if role == "Barbarian":
         weapon_A_list = items_lists.list_martial_weapons
         weapon_A = random.choice(weapon_A_list)
@@ -942,7 +921,73 @@ def get_starting_gear(role):
         else:
             gear["Secondary Main Hand"] = weapon_B
         gear["Armor"] = "Clothing"
-    #elif role == "Bard": 
+    
+    elif role == "Bard": 
+        weapon_A_list = items_lists.list_simple_weapons + ["Longsword","Rapier"]
+        weapon_A = random.choice(weapon_A_list)
+        gear["Main Hand"] = weapon_A
+        if items_lists.weapon_data[gear["Main Hand"]]["Hands"] == "2H":
+            gear["Secondary Main Hand"] = "Dagger"
+        else:
+            gear["Off Hand"] = "Dagger"
+        gear["Armor"] = "Leather"
+    
+    elif role == "Cleric":
+        weapon_A_list = ["Mace","Warhammer"] # Later on needs a proficiency check for warhammer.
+        weapon_A = random.choice(weapon_A_list)
+        gear["Main Hand"] = weapon_A
+        weapon_B_list = ["Light Crossbow"] + items_lists.list_simple_weapons
+        gear["Secondary Main Hand"] = random.choice(weapon_B_list) # May be more efficient way
+        gear["Off Hand"] = "Shield"
+        armor_list = ["Scale Mail","Leather","Chain Mail"] # Also needs a proficiency check once implemented.
+        armor = random.choice(armor_list)
+        gear["Armor"] = armor
+    
+    elif role == "Druid":
+        weapon_A_list = ["Scimitar"] + items_lists.list_simple_weapons
+        gear["Main Hand"] = random.choice(weapon_A_list)
+        if items_lists.weapon_data[gear["Main Hand"]]["Hands"] != "2H":
+            weapon_B_list = ["Shield"] + items_lists.list_simple_weapons
+            weapon_B = random.choice(weapon_B_list)
+            if weapon_B == "Shield":
+                gear["Off Hand"] = weapon_B
+            elif items_lists.weapon_data[weapon_B]["Hands"] != "2H":
+                gear["Off Hand"] = weapon_B
+            else:
+                gear["Secondary Main Hand"] = weapon_B
+        else:
+            weapon_B_list = items_lists.list_simple_weapons
+            weapon_B = random.choice(weapon_B_list)
+            gear["Secondary Main Hand"] = weapon_B
+        
+    elif role == "Fighter":
+        armor_list = ["Chain Mail","Leather"]
+        gear["Armor"] = random.choice(armor_list)
+        if gear["Armor"] == "Leather":
+            gear["Secondary Main Hand"] = "Longbow"
+        gear["Main Hand"] = random.choice(items_lists.list_martial_weapons)
+        if items_lists.weapon_data[gear["Main Hand"]]["Hands"] != "2H":
+            gear["Off Hand"] = random.choice(["Shield","Shield","Shield","Shield"] + items_lists.list_martial_weapons_1H)
+        elif items_lists.weapon_data[gear["Main Hand"]]["Hands"] == "2H" and gear["Secondary Main Hand"] == "":
+            gear["Secondary Main Hand"] = random.choice(["Light Crossbow","Handaxe"] + items_lists.list_martial_weapons)
+            if gear["Secondary Main Hand"] == "Handaxe":
+                gear["Secondary Off Hand"] = "Handaxe"
+            
+        
+    
+    #elif role == "Monk":
+    
+    #elif role == "Paladin":
+    
+    #elif role == "Ranger":
+    
+    #elif role == "Rogue":
+    
+    #elif role == "Sorcerer":
+    
+    #elif role == "Warlock":
+    
+    #elif role == "Wizard":
     else: # Using the Bard as general gear for testing purposes
         weapon_A_list = items_lists.list_simple_weapons + ["Longsword","Rapier"]
         weapon_A = random.choice(weapon_A_list)
@@ -952,6 +997,7 @@ def get_starting_gear(role):
         else:
             gear["Off Hand"] = "Dagger"
         gear["Armor"] = "Leather"
+    
     return gear
     
 
@@ -982,9 +1028,10 @@ def beginning():
 
 
 def day_menu():
+    day = games[-1].get_day()
     print("###########################################################################")
     print("#                                                                         #")
-    print("#   Day %d " % day + (" " * (65 - len(str(day)))) + "#")
+    print("#   Day %d " % day[0] + (" " * (65 - len(str(day[0])))) + "#")
     print("#   C - Characters                                                        #")
     print("#   T - Town status                                                       #")
     print("#   H - Skirmish enemy                                                    #")
@@ -1007,7 +1054,7 @@ def day_menu():
     #elif choice == "s":
         #save_game()
     elif choice == 'c':
-        character_screen(characters)
+        character_screen(games[-1].character_list)
     #elif choice == "t":
         #town_status(locations)
     elif choice == "h":
@@ -1021,10 +1068,11 @@ def day_menu():
     #elif choice == "f":
         #crafting()
     elif choice == "p":
-        shopping(freedom_score, money)
-    #elif choice == "n":
-    #    day += 1
-    #    print("You decide to wait until tomorrow.")
+        shopping()
+    elif choice == "n": # needs a rewamp
+        day += 1
+        print("You decide to wait until tomorrow.")
+        day_menu()
     else:
         print("You what now?")
         day_menu()
@@ -1060,7 +1108,7 @@ def character_screen(character_list):
                     print("You do not have this many characters.")
                 elif 0 < int(choice) < 11:
                     pointer = int(choice) - 1 + page * 10
-                    character_stats(characters_c[character_list[pointer]], page)
+                    character_stats(games[-1].character_dict[character_list[pointer]], page)
                 else:
                     print("The number you gave is too large or a negative number.")
             except ValueError:
@@ -1239,8 +1287,10 @@ def convert_y_to_numbers(coordinates):
     coordinates[0] = int(coordinates[0]) - 1
     return coordinates
 
-def shopping(freedom_score, money):
+def shopping():
     """Parent function for shop interface."""
+    global money
+    global freedom_score
     items = shop.get_shop_items(freedom_score) # An array of item classes, determined by the function according to how much of the town has been freed.
     shop.shopping_screen(money, items)
     menu_fail_counter = 0

@@ -2,7 +2,17 @@ class weapon: # WIP, will need to add in more structure, damage rolls etc.
     def __init__(self,data): # Data is a list of the weapon's attributes: [name, damage, 1H_or_2H, range, attribute, base_price]
         self.name = data[0]
         self.hit_dice = data[1].split("D") #hit_dice[0] is number of dice, [1] determines the dice used, D6, D8 etc.
+        self.versatility = data[2]
         
+    def roll_damage(hands):
+        damage = 0
+        max_damage = int(self.hit_dice[1])
+        if self.versatility == "Both" and hands == 2:
+            max_damage += 2
+        for i in range(int(self.hit_dice[0])):
+            damage += random.randint(1,max_damage)
+        return damage
+    
 # The Prices will need to be balanced, currently merely placeholders.
 ranges = [[0,0],[20,60],[30,120],[80,320],[100,400],[150,600]]
 
@@ -77,4 +87,5 @@ basic_general_items = [ # List is incomplete.
 list_simple_weapons = ["Club","Dagger","Greatclub","Handaxe","Javelin","Light Hammer","Mace","Quarterstaff","Sickle","Spear"]
 list_simple_ranged = ["Light Crossbow","Dart","Shortbow","Sling"]
 list_martial_weapons = ["Battleaxe","Flail","Glaive","Greataxe","Greatsword","Halberd","Lance","Longsword","Maul","Morningstar","Pike","Rapier","Scimitar","Shortsword","Trident","War Pick","Warhammer","Whip"]
+list_martial_weapons_1H = ["Battleaxe","Flail","Longsword","Morningstar","Rapier","Scimitar","Shortsword","Trident","War Pick","Warhammer","Whip"]
 list_martial_ranged= ["Hand Crossbow","Heavy Crossbow","Longbow"]
