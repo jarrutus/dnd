@@ -1,10 +1,16 @@
+# Dimensions of a regular screen are 17 rows of 75 characters each, including the borders.
+
 class screen:
     def __init__(self, name, lines):
         self.name = name
-        self.lines = lines
-    def print_screen(self): # Maybe use \n instead of several prints?
-        for line in self.lines:
-            print(line)
+        self.string = ""
+        while len(lines) > 0:
+            line = lines.pop(0)
+            self.string += line
+            if len(lines) > 0:
+                self.string += "\n"
+    def print_screen(self): 
+        print(self.string)
 
 screens_data = [ # For creating screen objects via screen class.
     ["Start_Screen",["###########################################################################",

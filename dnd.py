@@ -1,3 +1,6 @@
+#
+# Some portions of the code were done a couple years ago and thus the code can be a bit confusing at times.
+#
 __author__ = 'jarrutus'
 import random
 import sys
@@ -154,7 +157,7 @@ def starting_screen():
                     prepare_new_game()
                     start_new_game()
                 elif choice == 2:
-                    pointer = 1
+                    # pointer = 1
                     print("Loading games has not been implemented yet, please choose 1 or 3.")
                     # load_game()
                 elif choice == 3:
@@ -1228,16 +1231,22 @@ def battle(field_base): #,characters, enemies
     print("###########################################################################")
     while True:
         print("This is a test feature. To exit, press Enter")
-        start = input("Give starting coordinates separeted by space (like '10 A'): ")
+        print("First we need start position.")
+        start = ask_coordinates()
+        
         if start == "":
             break
-        end = input("Give target coordinates, separated by a space: ")
+        else:
+            initiator = convert_y_to_numbers(start)
+        
+        print("Next we need a target")
+        end = ask_coordinates()
+        
         if end == "":
             break
-        start_split = start.split() # These could be done in half the rows as currently, but is this way for clarity.
-        end_split = end.split()
-        initiator = convert_y_to_numbers(start_split)
-        target = convert_y_to_numbers(end_split)
+        else:
+            target = convert_y_to_numbers(end)
+
         visible = check_if_visible(fieldB, initiator, target)
         if visible == 1:
             print("Target is visible.")
@@ -1259,40 +1268,69 @@ def printable_row(field, row):
 
 #def create_enemy(type):
 
+def ask_coordinates():
+    while True:
+        coords = input("Give coordinates separeted by space (like '10 A' or '10 1'): ")
+        if len(coords.split()) == 0:
+            coords_split = ""
+            break
+        elif len(coords.split()) == 2:
+            coords_split = coords.split()
+            try:
+                coords_split[0] = int(coords_split[0]) # Will need checks to make sure the number isn't too large or negative.
+            except ValueError:
+                print("First argument doesn't seem to be an intereger, try again.")
+                continue
+            try:
+                coords_split[1] = int(coords_split[1])
+                break
+            except ValueError:
+                if coords_split[1].upper() in ["A","B","C","D","E","F","G","H","I","J","K","L"]:
+                    break
+                else:
+                    print("Second argument doesn't seem to be integer or a letter within the range of the board, try again.")
+                    continue
+        else:
+            print("The number of arguments seems to be incorrect, try again.")
+            continue # Technically not required, but makes the loop a bit more visually obvious.        
+    return coords_split
+
 def convert_y_to_numbers(coordinates):
-    if coordinates[1] == "A":
-        coordinates[1] = 0
-    elif coordinates[1] == "B":
-        coordinates[1] = 1
-    elif coordinates[1] == "C":
-        coordinates[1] = 2
-    elif coordinates[1] == "D":
-        coordinates[1] = 3
-    elif coordinates[1] == "E":
-        coordinates[1] = 4
-    elif coordinates[1] == "F":
-        coordinates[1] = 5
-    elif coordinates[1] == "G":
-        coordinates[1] = 6
-    elif coordinates[1] == "H":
-        coordinates[1] = 7
-    elif coordinates[1] == "I":
-        coordinates[1] = 8
-    elif coordinates[1] == "J":
-        coordinates[1] = 9
-    elif coordinates[1] == "K":
-        coordinates[1] = 10
-    elif coordinates[1] == "L":
-        coordinates[1] = 11
+    if isinstance(coordinates[1], str) == True:
+        coordinates[1] = coordinates[1].upper()
+        if coordinates[1] == "A":
+            coordinates[1] = 0
+        elif coordinates[1] == "B":
+            coordinates[1] = 1
+        elif coordinates[1] == "C":
+            coordinates[1] = 2
+        elif coordinates[1] == "D":
+            coordinates[1] = 3
+        elif coordinates[1] == "E":
+            coordinates[1] = 4
+        elif coordinates[1] == "F":
+            coordinates[1] = 5
+        elif coordinates[1] == "G":
+            coordinates[1] = 6
+        elif coordinates[1] == "H":
+            coordinates[1] = 7
+        elif coordinates[1] == "I":
+            coordinates[1] = 8
+        elif coordinates[1] == "J":
+            coordinates[1] = 9
+        elif coordinates[1] == "K":
+            coordinates[1] = 10
+        elif coordinates[1] == "L":
+            coordinates[1] = 11
+    elif isinstance(coordinates[1], int) == True:
+        coordinates[1] = int(coordinates[1]) - 1
     coordinates[0] = int(coordinates[0]) - 1
     return coordinates
 
 def shopping():
     """Parent function for shop interface."""
-    global money
-    global freedom_score
-    items = shop.get_shop_items(freedom_score) # An array of item classes, determined by the function according to how much of the town has been freed.
-    shop.shopping_screen(money, items)
+    items = shop.get_shop_items(games[-1].score) # An array of item classes, determined by the function according to how much of the town has been freed.
+    shop.shopping_screen(games[-1].money, items)
     menu_fail_counter = 0
     while True:
         choice = input("What will you do?:\n")
